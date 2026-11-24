@@ -1,0 +1,19 @@
+{
+  "name": "ULTRA RAT REPELLER — Premium Ultrasonic Engine",
+  "short_name": "RatRepeller",
+  "description": "Profesionální ultrazvukový generátor 22–25 kHz s Anti-Habituation enginem.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#07090e",
+  "theme_color": "#07090e",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["utilities", "productivity", "tools"]
+}

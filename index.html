@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#07090e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="RatRepeller">
+  <meta name="description" content="Ultra Rat Repeller — Pokročilý ultrazvukový generátor 22–25 kHz s Anti-Habituation enginem pro experimentální odpuzování hlodavců.">
+  <title>ULTRA RAT REPELLER — Premium Ultrasonic Engine</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Ambient background glow elements -->
+  <div class="ambient-glow cyan"></div>
+  <div class="ambient-glow violet"></div>
+
+  <div class="app-container">
+    <!-- TOP STATUS BAR / HEADER -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" stroke="url(#cyanGrad)" />
+            <circle cx="12" cy="12" r="3" fill="#00f0ff" />
+            <defs>
+              <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00f0ff" />
+                <stop offset="100%" stop-color="#a855f7" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">ULTRA RAT REPELLER</h1>
+          <div class="brand-subtitle">PREMIUM ULTRASONIC ENGINE &bull; 22–25 kHz</div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="hwInfoBtn" class="icon-btn" title="Hardware a akustické info" aria-label="Informace o hardware">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="16" x2="12" y2="12" />
+            <line x1="12" y1="8" x2="12.01" y2="8" />
+          </svg>
+          <span class="badge-dot" id="hwStatusDot"></span>
+        </button>
+        <button id="quickMuteBtn" class="icon-btn danger-hover" title="Okamžité ztlumení / Emergency Mute" aria-label="Okamžité ztlumení">
+          <svg id="muteIcon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- LIVE TELEMETRY HUD -->
+    <section class="telemetry-hud">
+      <div class="hud-main">
+        <div class="freq-display-card">
+          <div class="hud-label-row">
+            <span class="hud-label">GENERATING FREQUENCY</span>
+            <span class="hud-tag" id="cycleStatusBadge">STANDBY</span>
+          </div>
+          <div class="freq-value-row">
+            <span class="freq-number" id="freqValue">23,500</span>
+            <span class="freq-unit">Hz</span>
+          </div>
+          <div class="freq-bar-wrapper">
+            <div class="freq-bar-track">
+              <div class="freq-bar-fill" id="freqBarFill" style="width: 50%;"></div>
+              <div class="freq-marker min">22 kHz</div>
+              <div class="freq-marker center">23.5 kHz</div>
+              <div class="freq-marker max">25 kHz</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hud-stats-grid">
+          <div class="stat-pill">
+            <span class="stat-name">ACTIVE MODE</span>
+            <span class="stat-val cyan-text" id="hudActiveMode">AUTO ANTI-HAB</span>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-name">RUNTIME</span>
+            <span class="stat-val" id="hudRuntime">00:00:00</span>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-name">AUDIO OUTPUT</span>
+            <span class="stat-val" id="hudOutputLevel">85 %</span>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-name">ENTROPY / PATTERN</span>
+            <span class="stat-val violet-text" id="hudEntropy">SEEKING</span>
+          </div>
+        </div>
+
+        <!-- ENGINE TELEMETRY BAR -->
+        <div class="hud-engine-banner">
+          <div class="engine-state-item">
+            <span class="hud-dot" id="engineActiveDot"></span>
+            <span class="engine-state-label">AUDIO ENGINE:</span>
+            <strong class="engine-state-val" id="engineStatusText">PŘIPRAVEN (READY)</strong>
+          </div>
+          <div class="engine-range-item">
+            <span class="engine-state-label">ROZSAH:</span>
+            <strong class="engine-state-val cyan-text" id="engineRangeText">22 000 – 25 000 Hz</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VISUALIZATION CANVAS STAGE -->
+    <section class="visualizer-section">
+      <div class="visualizer-header">
+        <span class="viz-title">
+          <span class="live-pulse" id="vizPulse"></span>
+          AKUSTICKÝ RADAR &amp; SPEKTROGRAM
+        </span>
+        <div class="viz-mode-toggles">
+          <button class="viz-pill-btn active" data-viz="radar">RADAR</button>
+          <button class="viz-pill-btn" data-viz="history">HISTORIE</button>
+          <button class="viz-pill-btn" data-viz="scope">OSCILOSKOP</button>
+        </div>
+      </div>
+
+      <div class="canvas-container">
+        <canvas id="vizCanvas" width="600" height="260"></canvas>
+        <div class="canvas-overlay-badges">
+          <span class="canvas-badge" id="canvasPhaseIndicator">READY</span>
+          <span class="canvas-badge" id="canvasTargetFreq">23.50 kHz</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- MASTER CONTROL CENTER -->
+    <section class="master-control-section">
+      <div class="main-trigger-container">
+        <button id="masterTriggerBtn" class="master-btn stopped" aria-label="Spustit ultrazvukový generátor">
+          <div class="btn-ripple-layer"></div>
+          <div class="master-btn-content">
+            <svg id="masterBtnIcon" viewBox="0 0 24 24" width="38" height="38" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+            <span class="master-btn-text" id="masterBtnText">START GENERATOR</span>
+            <span class="master-btn-sub" id="masterBtnSub">22.0 – 25.0 kHz ULTRA ENGINE</span>
+          </div>
+        </button>
+      </div>
+
+      <div class="quick-emergency-bar">
+        <button id="stopEmergencyBtn" class="btn-emergency" disabled>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+            <rect x="6" y="6" width="12" height="12" rx="2" />
+          </svg>
+          STOP / OKAMŽITÉ VYPNUTÍ
+        </button>
+      </div>
+    </section>
+
+    <!-- 4 OPERATING MODES SELECTOR -->
+    <section class="modes-section">
+      <div class="section-title-row">
+        <h2 class="section-title">REŽIMY PROVOZU</h2>
+        <span class="section-sub">Anti-Habituation algoritmus</span>
+      </div>
+
+      <div class="modes-grid">
+        <!-- MODE 1 -->
+        <button class="mode-card" data-mode="sweep">
+          <div class="mode-card-header">
+            <span class="mode-badge">MODE 1</span>
+            <span class="mode-indicator"></span>
+          </div>
+          <div class="mode-name">RANDOM SWEEP</div>
+          <div class="mode-desc">Plynulé dynamické sweeps 22–25 kHz, náhodná rychlost a měnící se směr.</div>
+        </button>
+
+        <!-- MODE 2 -->
+        <button class="mode-card" data-mode="burst">
+          <div class="mode-card-header">
+            <span class="mode-badge">MODE 2</span>
+            <span class="mode-indicator"></span>
+          </div>
+          <div class="mode-name">RAPID BURST</div>
+          <div class="mode-desc">Krátké ultrazvukové pulzy, nepravidelné staccato intervaly a náhodné rytmy.</div>
+        </button>
+
+        <!-- MODE 3 -->
+        <button class="mode-card" data-mode="chaos">
+          <div class="mode-card-header">
+            <span class="mode-badge">MODE 3</span>
+            <span class="mode-indicator"></span>
+          </div>
+          <div class="mode-name">CHAOS PATTERN</div>
+          <div class="mode-desc">Kombinace sweepů, pulzů, skoků a pauz. Žádný identický cyklus, vysoká entropie.</div>
+        </button>
+
+        <!-- MODE 4 (DEFAULT) -->
+        <button class="mode-card active" data-mode="auto">
+          <div class="mode-card-header">
+            <span class="mode-badge highlight">MODE 4 &bull; AUTONOMNÍ</span>
+            <span class="mode-indicator"></span>
+          </div>
+          <div class="mode-name">AUTO ANTI-HABITUATION</div>
+          <div class="mode-desc">Inteligentní střídání všech režimů, dynamická správa pauz, zero-habituation.</div>
+        </button>
+      </div>
+    </section>
+
+    <!-- DETAILED PARAMETERS & SETTINGS ACCORDION -->
+    <section class="controls-section">
+      <div class="section-title-row">
+        <h2 class="section-title">PARAMETRY &amp; ČASOVÁNÍ</h2>
+      </div>
+
+      <div class="control-panel-card">
+        <!-- Volume / Intensity -->
+        <div class="control-row">
+          <div class="control-label-wrap">
+            <span class="ctrl-title">Intenzita signálu (Amplituda)</span>
+            <span class="ctrl-value cyan-text" id="intensityValue">85 %</span>
+          </div>
+          <input type="range" id="intensitySlider" min="5" max="100" value="85" step="1" class="slider-cyan">
+          <div class="slider-hints">
+            <span>5% (Tiché zkoušení)</span>
+            <span>50% (Standard)</span>
+            <span>100% (Max SPL)</span>
+          </div>
+        </div>
+
+        <!-- Working Burst Duration -->
+        <div class="control-row">
+          <div class="control-label-wrap">
+            <span class="ctrl-title">Délka aktivní emise (Pracovní cyklus)</span>
+            <span class="ctrl-value" id="burstDurationValue">3.5 s</span>
+          </div>
+          <input type="range" id="burstDurationSlider" min="0.5" max="15.0" value="3.5" step="0.5" class="slider-cyan">
+          <div class="slider-hints">
+            <span>0.5 s (Bleskové)</span>
+            <span>3.5 s (Optimální)</span>
+            <span>15 s (Dlouhé)</span>
+          </div>
+        </div>
+
+        <!-- Pause / Rest Duration -->
+        <div class="control-row">
+          <div class="control-label-wrap">
+            <span class="ctrl-title">Délka přestávky (Klidový interval)</span>
+            <span class="ctrl-value" id="pauseDurationValue">1.8 s</span>
+          </div>
+          <input type="range" id="pauseDurationSlider" min="0.2" max="10.0" value="1.8" step="0.2" class="slider-violet">
+          <div class="slider-hints">
+            <span>0.2 s (Minimální pauza)</span>
+            <span>1.8 s (Anti-habituation)</span>
+            <span>10 s (Maskovací)</span>
+          </div>
+        </div>
+
+        <!-- Frequency Range Tuning -->
+        <div class="control-row">
+          <div class="control-label-wrap">
+            <span class="ctrl-title">Frekvenční rozsah ultrazvuku</span>
+            <span class="ctrl-value violet-text" id="freqRangeValue">22.0 – 25.0 kHz</span>
+          </div>
+          <div class="dual-range-selectors">
+            <div class="sub-range-btn-group">
+              <button class="range-preset-btn active" data-min="22000" data-max="25000">22 – 25 kHz (Standard)</button>
+              <button class="range-preset-btn" data-min="23000" data-max="25000">23 – 25 kHz (Vysoký)</button>
+              <button class="range-preset-btn" data-min="20000" data-max="24000">20 – 24 kHz (48k Safe)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Auto Shutdown Timer -->
+        <div class="control-row">
+          <div class="control-label-wrap">
+            <span class="ctrl-title">Časovač automatického vypnutí</span>
+            <span class="ctrl-value" id="timerValue">Nepřetržitě (&infin;)</span>
+          </div>
+          <div class="timer-chips">
+            <button class="chip-btn active" data-time="0">Trvale</button>
+            <button class="chip-btn" data-time="900">15 min</button>
+            <button class="chip-btn" data-time="1800">30 min</button>
+            <button class="chip-btn" data-time="3600">1 hod</button>
+            <button class="chip-btn" data-time="14400">4 hod</button>
+          </div>
+        </div>
+
+        <!-- Manual Engine Frequency Calibration & Sweep Tester -->
+        <div class="control-row" style="border-top: 1px dashed var(--border-dim); padding-top: 12px; margin-top: 4px;">
+          <div class="control-label-wrap">
+            <span class="ctrl-title">Manuální testování frekvence (22–25 kHz)</span>
+            <span class="ctrl-value cyan-text" id="manualFreqValue">23 500 Hz</span>
+          </div>
+          <input type="range" id="manualFreqSlider" min="22000" max="25000" value="23500" step="50" class="slider-cyan">
+          <div class="slider-hints">
+            <span>22 000 Hz</span>
+            <span>23 500 Hz</span>
+            <span>25 000 Hz</span>
+          </div>
+          <div class="sub-range-btn-group" style="margin-top: 6px;">
+            <button class="chip-btn manual-tone-btn" data-freq="22000">22.0k</button>
+            <button class="chip-btn manual-tone-btn" data-freq="22500">22.5k</button>
+            <button class="chip-btn manual-tone-btn" data-freq="23000">23.0k</button>
+            <button class="chip-btn manual-tone-btn" data-freq="23500">23.5k</button>
+            <button class="chip-btn manual-tone-btn" data-freq="24000">24.0k</button>
+            <button class="chip-btn manual-tone-btn" data-freq="24500">24.5k</button>
+            <button class="chip-btn manual-tone-btn" data-freq="25000">25.0k</button>
+          </div>
+          <button id="manualTestSweepBtn" class="btn-action-sweep">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 12h4l3 8 4-16 3 8h4"/>
+            </svg>
+            TEST FREKVENČNÍHO SWEEPU (22 &rarr; 25 kHz)
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- HARDWARE & ACOUSTIC REALITY INFO DRAWER / CARD -->
+    <section class="hw-section">
+      <div class="hw-card">
+        <div class="hw-header">
+          <div class="hw-badge-icon">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="hw-title">Technická diagnostika audio hardware</h3>
+            <div class="hw-sub" id="hwSampleRateNotice">Audio engine čeká na inicializaci...</div>
+          </div>
+        </div>
+
+        <div class="hw-grid">
+          <div class="hw-item">
+            <span class="hw-item-label">Vzorkovací frekvence:</span>
+            <span class="hw-item-value" id="diagSampleRate">—</span>
+          </div>
+          <div class="hw-item">
+            <span class="hw-item-label">Nyquistův akustický limit:</span>
+            <span class="hw-item-value" id="diagNyquist">—</span>
+          </div>
+          <div class="hw-item">
+            <span class="hw-item-label">Stav AudioContext:</span>
+            <span class="hw-item-value" id="diagAudioState">SUSPENDED</span>
+          </div>
+          <div class="hw-item">
+            <span class="hw-item-label">Ochrana proti kliknutí:</span>
+            <span class="hw-item-value green-text">AKTIVNÍ (Soft Ramp)</span>
+          </div>
+        </div>
+
+        <div class="disclaimer-box">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#f59e0b" stroke-width="2" class="alert-icon">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <div class="disclaimer-text">
+            <strong>Důležité technické a biologické upozornění:</strong>
+            Mobilní mikroskopické reproduktory telefonů a notebooků mají strmý útlum akustického tlaku (SPL) nad 18–20 kHz. I když audio kodek generuje čistý signál 22–25 kHz, pro reálné akustické vyzáření ultrazvuku je doporučeno připojit externí piezoelektrický ultrazvukový reproduktor / transducer. Použití je určeno pro experimentální účely; aplikace netvrdí, že prokazatelně eradicuje hlodavce.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="app-footer">
+      <div class="footer-copy">ULTRA RAT REPELLER &bull; EXPERIMENTAL ULTRASONIC SUITE v2.0</div>
+      <div class="footer-pwa-status" id="pwaStatus">Režim: Web Audio PWA</div>
+    </footer>
+  </div>
+
+  <!-- HARDWARE MODAL DIALOG -->
+  <div class="modal-backdrop" id="hwModalBackdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Technické specifikace &amp; Ultrazvuková fyzika</h3>
+        <button class="modal-close-btn" id="modalCloseBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <h4>1. Princip 22 000 – 25 000 Hz</h4>
+        <p>Potkani (Rattus norvegicus) a krysy vnímají zvuky v rozsahu 200 Hz až 80–90 kHz. Pásmo 22–25 kHz je pro lidi neslyšitelné, ale pro hlodavce představuje oblast varovných sociálních vokalizací a akustického diskomfortu.</p>
+        
+        <h4>2. Anti-Habituation Engine</h4>
+        <p>Běžné statické ultrazvukové odpuzovače selhávají do 3–7 dnů, protože si hlodavci na neměnný tón zvyknou (habituace). Tento engine využívá procedurální stochastické algoritmy, proměnlivé sweeps, rapidní pulzy a náhodné periody klidu, čímž habituaci znemožňuje.</p>
+        
+        <h4>3. Akustická realita reproduktorů</h4>
+        <p>Software generuje matematicky přesnou sinusovou / FM vlnu prostřednictvím Web Audio API s využitím 32-bit floating point syntézy a nulových artefaktů (soft de-clicking envelope). Přesto běžné dynamické membrány telefonů nemohou fyzicky kmitat na 24 kHz se silným akustickým tlakem. Pro seriózní nasazení použijte audio výstup zapojený do ultrazvukového piezo měniče.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary" id="modalOkBtn">Rozumím a akceptuji</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- APPLICATION SCRIPTS -->
+  <script src="js/audio-engine.js?v=2.5"></script>
+  <script src="js/anti-habituation.js?v=2.5"></script>
+  <script src="js/visualizer.js?v=2.5"></script>
+  <script src="js/app.js?v=2.5"></script>
+  <script>
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(err => {
+          console.warn('SW registration failed: ', err);
+        });
+      });
+    }
+  </script>
+</body>
+</html>
